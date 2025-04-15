@@ -11,6 +11,7 @@ import service.DownloadService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -18,10 +19,14 @@ import java.io.IOException;
 public class DownloadController {
 
     @PostMapping("/download")
-    public ResponseEntity<String> download(@RequestBody DownloadRequest request) {
+    public ResponseEntity<?> download(@RequestBody DownloadRequest request) {
         String message = DownloadService.downloadAudio(request.getUrl());
 
-        return ResponseEntity.ok(message);
+        if (message.equals("url is invalid") || message.equals("Error when processing the URL.")) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", message));
+        }
+
+        return ResponseEntity.ok(Map.of("status", "success", "fileName", message));
     }
 
     @GetMapping("/file")
